@@ -1,14 +1,15 @@
 import React from "react";
 import { useFetch } from "../../query/useFetch";
 import { Link } from "react-router-dom";
-import { RiArrowDropDownLine } from "react-icons/ri";
+import { RiArrowDropDownLine, RiWifiOffLine } from "react-icons/ri";
 
 const Projects = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-  const { data, isLoading } = useFetch({
-    query: "/api/projects",
+  const { data, isLoading, isError, error } = useFetch({
+    query: "/api/projects", 
     key: "projects",
   });
+
   // Skeleton Loading Component
   const Skeleton = () => (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
@@ -27,6 +28,38 @@ const Projects = () => {
     </div>
   );
 
+  // Error State Component
+  const ErrorState = () => (
+    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+      <RiWifiOffLine className="text-4xl text-gray-400 mb-4" />
+      <h3 className="text-lg font-medium text-gray-900 mb-2">
+        Unable to load projects
+      </h3>
+      <p className="text-gray-600 mb-4 max-w-md">
+        {error?.message ||
+          "There was a problem fetching the projects. Please check your internet connection and try again."}
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 bg-[#FFB600] text-white rounded-md hover:bg-[#e6a400] transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
+  // Empty State Component
+  const EmptyState = () => (
+    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+      <h3 className="text-lg font-medium text-gray-900 mb-2">
+        No projects found
+      </h3>
+      <p className="text-gray-600">
+        There are currently no projects to display.
+      </p>
+    </div>
+  );
+
   const renderProjects = (project) => {
     return (
       <div
@@ -40,7 +73,6 @@ const Projects = () => {
           hover:-translate-y-1
         "
       >
-        
         {/* Image Container */}
         <div
           className="
@@ -59,7 +91,7 @@ const Projects = () => {
           <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/0 text-white opacity-0 transition-opacity group-hover:bg-black/40 group-hover:opacity-100">
             <span>Read More</span>
             <RiArrowDropDownLine size={24} />
-          </div>  
+          </div>
         </div>
 
         {/* Content */}
@@ -91,17 +123,31 @@ const Projects = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data?.map((project) => (
-          <div key={project._id}>
-            {isLoading ? (
-              <Skeleton />
-            ) : (
+        {isLoading ? (
+          // Show skeleton loaders while loading
+          Array(3)
+            .fill()
+            .map((_, index) => (
+              <div key={`skeleton-${index}`}>
+                <Skeleton />
+              </div>
+            ))
+        ) : isError ? (
+          // Show error state if there's an error
+          <ErrorState />
+        ) : !data || data.length === 0 ? (
+          // Show empty state if no data
+          <EmptyState />
+        ) : (
+          // Show actual data
+          data?.map((project) => (
+            <div key={project._id}>
               <Link to={`/project/${project._id}`}>
                 {renderProjects(project)}
               </Link>
-            )}
-          </div>
-        ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

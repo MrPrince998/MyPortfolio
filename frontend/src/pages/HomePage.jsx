@@ -6,16 +6,17 @@ import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import ServiceCard from "../components/service/ServiceCard";
 import { CommandLineIcon } from "@heroicons/react/24/outline";
 import { LayoutDashboard, Settings } from "lucide-react";
-import userImg from "../assets/heroImage/userImg.png";
-import SkillCard from "../components/skill/SkillCard";
-import ContactForm from "../components/contact/ContactForm";
 import Typewriter from "typewriter-effect";
 import { Link as ScrollLink } from "react-scroll";
-import Bio from "../components/bio/Bio";
-import Projects from "../components/project/Projects";
 import { useFetch } from "../query/useFetch";
-import { href } from "react-router-dom";
 import { Button } from "../components/ui/Button";
+import {
+  AboutMe,
+  BioSection,
+  ContactForm,
+  Project,
+  Skill,
+} from "../routes/routes";
 
 const HomePage = () => {
   const socialMediaLinks = [
@@ -194,7 +195,7 @@ const HomePage = () => {
             className="hidden md:grid grid-cols-3 p-6 gap-x-2 bg-[#E1E1E1] mt-20 rounded-lg"
           >
             {/* ... (stats content) */}
-            <Bio />
+            <BioSection />
           </motion.div>
         </motion.div>
 
@@ -207,7 +208,7 @@ const HomePage = () => {
           className="grid grid-cols-3 p-6 gap-x-2 bg-[#E1E1E1] md:hidden "
         >
           {/* ... (stats content) */}
-          <Bio />
+          <BioSection />
         </motion.div>
       </motion.header>
 
@@ -269,32 +270,7 @@ const HomePage = () => {
           variants={fadeInUp}
           className="flex flex-col md:flex-row items-center gap-8 md:gap-16"
         >
-          <section id="about" className="font-lato px-4 md:px-0">
-            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-              <div className="order-2 md:order-1 md:w-1/2">
-                <h1 className="font-bold text-2xl text-[#575757] text-center md:text-left mb-6">
-                  About me
-                </h1>
-                <p className="text-[#828282] mb-8 text-center md:text-left">
-                  I'm a passionate UX/UI and web developer focused on crafting
-                  intuitive, responsive, and visually engaging digital
-                  experiences. I combine design thinking with clean code to
-                  bring ideas to life on the web.
-                </p>
-                <div className="text-center md:text-left">
-                  <Button>Resume</Button>
-                </div>
-              </div>
-
-              <div className="order-1 md:order-2 relative w-64 h-64 md:w-80 md:h-80 bg-[#fdc435] rounded-full mx-auto">
-                <img
-                  src={userImg}
-                  alt="user"
-                  className="absolute bottom-0 right-0 w-full h-auto"
-                />
-              </div>
-            </div>
-          </section>
+          <AboutMe />
         </motion.div>
 
         <motion.div
@@ -303,7 +279,7 @@ const HomePage = () => {
         >
           {skillDetails?.map((item) => (
             <motion.div key={item._id} variants={fadeInUp}>
-              <SkillCard
+              <Skill
                 icon={item.icon}
                 title={item.title}
                 progress={item.progress}
@@ -334,7 +310,7 @@ const HomePage = () => {
             whileHover={{ y: -10 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Projects />
+            <Project />
           </motion.div>
         </motion.div>
       </motion.section>
