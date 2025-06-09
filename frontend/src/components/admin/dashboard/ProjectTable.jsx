@@ -7,10 +7,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import DeleteModal from "@/components/modal/DeleteModal";
 import { Button } from "@/components/ui/Button";
 import UpdateProjectModal from "@/components/modal/UpdateProjectModal";
 import AddProjectModal from "@/components/modal/AddProjectModal";
+import DeleteModal from "@/components/modal/DeleteModal";
 
 export const ProjectTable = ({ data, totalProject }) => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
@@ -48,7 +48,7 @@ export const ProjectTable = ({ data, totalProject }) => {
       cell: (info) => {
         const dateValue = info.getValue();
         if (!dateValue) {
-          return "N/A"; 
+          return "N/A";
         }
         try {
           const date = new Date(dateValue);

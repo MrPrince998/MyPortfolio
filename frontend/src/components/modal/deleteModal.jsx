@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import clsx from "clsx";
 import { deleteData } from "@/query/useFetch";
-const deleteModal = ({ className, id, keys }) => {
+const DeleteModal = ({ className, id, keys }) => {
   const { mutate } = deleteData();
   let baseQuery = "";
 
@@ -52,4 +52,4 @@ const deleteModal = ({ className, id, keys }) => {
   );
 };
 
-export default deleteModal;
+export default DeleteModal;
