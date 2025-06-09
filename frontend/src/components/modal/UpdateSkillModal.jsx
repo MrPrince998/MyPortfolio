@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/Input";
 import { useState } from "react";
-import { post } from "@/query/useFetch";
+import { useFetchById, updateData, useFetch } from "@/query/useFetch";
 import {
   Select,
   SelectContent,
@@ -21,9 +21,12 @@ import {
 } from "@/components/ui/select";
 import { queryClient } from "@/main";
 
-const AddModal = () => {
-  const [open, setOpen] = useState(false);
-  const { mutate, isPending } = post();
+const UpdateSkillModal = ({ id, open, onOpenChange }) => {
+  const { mutate, isPending } = updateData();
+  const { data: GetSingleSkill } = useFetch({
+    query: `/api/skills/${id}`,
+    key: "skills"
+  });
 
   const skillValidationSchema = Yup.object().shape({
     icon: Yup.object().shape({
@@ -39,14 +42,14 @@ const AddModal = () => {
       .max(100, "Progress can't exceed 100"),
   });
 
-  const handleAddSkill = (values, { resetForm }) => {
+  const handleUpdate = (values, { resetForm }) => {
     mutate(
-      { query: "/api/skills", data: values },
+      { query: `/api/skills/${id}`, data: values },
       {
         onSuccess: () => {
           resetForm();
-          queryClient.invalidateQueries("skills")
-          setOpen(false);
+          queryClient.invalidateQueries("skills");
+          onOpenChange(false);
         },
       }
     );
@@ -60,22 +63,23 @@ const AddModal = () => {
   ];
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Add Skill</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[435px]">
         <DialogHeader>
-          <DialogTitle>Add Skill</DialogTitle>
+          <DialogTitle>Edit skill</DialogTitle>
         </DialogHeader>
         <Formik
+          enableReinitialize={true}
           initialValues={{
-            icon: { library: "", name: "" },
-            title: "",
-            progress: 0,
+            icon: {
+              library: GetSingleSkill?.icon?.library || "",
+              name: GetSingleSkill?.icon?.name || "",
+            },
+            title: GetSingleSkill?.title || "",
+            progress: GetSingleSkill?.progress || 0,
           }}
           validationSchema={skillValidationSchema}
-          onSubmit={handleAddSkill}
+          onSubmit={handleUpdate}
         >
           {({
             values,
@@ -179,7 +183,7 @@ const AddModal = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setOpen(false)}
+                  onClick={() => onOpenChange(false)}
                   disabled={isSubmitting || isPending}
                 >
                   Cancel
@@ -196,4 +200,4 @@ const AddModal = () => {
   );
 };
 
-export default AddModal;
+export default UpdateSkillModal;

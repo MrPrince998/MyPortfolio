@@ -1,54 +1,55 @@
-import * as React from "react";
-import { AlertDialog } from "radix-ui";
+import React from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import clsx from "clsx";
-import { deleteData, useFetch } from "../../query/useFetch";
+import { deleteData } from "@/query/useFetch";
+const deleteModal = ({ className, id, keys }) => {
+  const { mutate } = deleteData();
+  let baseQuery = "";
 
-const DeleteModal = ({ className }) => {
-  const { mutate, isLoading, isSuccess } = deleteData();
-
+  if (keys === "skills") {
+    baseQuery = "/api/skills";
+  } else if(keys= "projects"){
+    baseQuery = "/api/projects";
+  }
   const handleDelete = () => {
-    mutate({ query: "/api/delete:id" });
+    mutate({ query: `${baseQuery}/${id}`, key: `${keys}` });
   };
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger asChild>
-        <button
-          className={clsx(
-            `inline-flex h-[35px] items-center justify-center rounded bg-violet4 px-[15px] font-medium leading-none text-violet11 outline-none outline-offset-1 hover:bg-mauve3 focus-visible:outline-2 focus-visible:outline-violet6 select-none ${className}`
-          )}
-        >
-          Delete
-        </button>
-      </AlertDialog.Trigger>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 bg-blackA6 data-[state=open]:animate-overlayShow" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-gray1 p-[25px] shadow-[var(--shadow-6)] focus:outline-none data-[state=open]:animate-contentShow">
-          <AlertDialog.Title className="m-0 text-[17px] font-medium text-mauve12">
-            Are you absolutely sure?
-          </AlertDialog.Title>
-          <AlertDialog.Description className="mb-5 mt-[15px] text-[15px] leading-normal text-mauve11">
+    <AlertDialog>
+      <AlertDialogTrigger
+        className={clsx(
+          `inline-flex h-[35px] items-center justify-center rounded bg-violet4 px-[15px] font-medium leading-none text-violet11 outline-none outline-offset-1 hover:bg-mauve3 focus-visible:outline-2 focus-visible:outline-violet6 select-none ${className}`
+        )}
+      >
+        Delete
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
-          </AlertDialog.Description>
-          <div className="flex justify-end gap-[25px]">
-            <AlertDialog.Cancel asChild>
-              <button className="text-secondary bg-blue-500 inline-flex h-[35px] items-center justify-center rounded bg-mauve4 px-[15px] font-medium leading-none text-mauve11 outline-none outline-offset-1 hover:bg-mauve5 focus-visible:outline-2 focus-visible:outline-mauve7 select-none">
-                Cancel
-              </button>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action asChild>
-              <button
-                onClick={handleDelete}
-                className="bg-destructive text-secondary inline-flex h-[35px] items-center justify-center rounded bg-red4 px-[15px] font-medium leading-none text-red11 outline-none outline-offset-1 hover:bg-red5 focus-visible:outline-2 focus-visible:outline-red7 select-none"
-              >
-                Yes, delete account
-              </button>
-            </AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="hover:text-secondary">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} variant="destructive">
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
-export default DeleteModal;
+export default deleteModal;

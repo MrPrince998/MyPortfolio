@@ -185,16 +185,14 @@ const NavBar = () => {
               {showLoginLink &&
                 (!isLoggedIn ? (
                   <Button
-                    name={"Login"}
                     onClick={handleLoginClick}
-                    className="px-4 py-2 m-3"
-                  />
+                    className="px-4 py-2 m-3 mt-5"
+                  >Login</Button>
                 ) : (
                   <Button
-                    name={"Log Out"}
                     onClick={logout}
-                    className="px-4 py-2 ml-3"
-                  />
+                    className="px-4 py-2 ml-3 mt-5"
+                  >Logout</Button>
                 ))}
             </ul>
           </div>

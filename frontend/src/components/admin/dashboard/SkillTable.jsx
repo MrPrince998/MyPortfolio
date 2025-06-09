@@ -8,11 +8,12 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import DeleteModal from "@/components/modal/DeleteModal";
+import AddModal from "@/components/modal/addModal";
+import UpdateSkillModal from "@/components/modal/UpdateSkillModal";
 import { Button } from "@/components/ui/Button";
-import UpdateProjectModal from "@/components/modal/UpdateProjectModal";
-import AddProjectModal from "@/components/modal/AddProjectModal";
 
-export const ProjectTable = ({ data, totalProject }) => {
+// const openEditModal = UpdateSkillModal();
+export const SkillTable = ({ data, totalskill }) => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState(null);
   const [sorting, setSorting] = useState([]);
@@ -21,12 +22,6 @@ export const ProjectTable = ({ data, totalProject }) => {
   const handleEditClick = (id) => {
     setSelectedSkillId(id);
     setOpenUpdateModal(true);
-  };
-
-  const colorMap = {
-    completed: "bg-blue-100 text-blue-800",
-    pending: "bg-orange-100 text-orange-800",
-    Active: "bg-green-100 text-green-800",
   };
 
   const columnHelper = createColumnHelper();
@@ -39,12 +34,8 @@ export const ProjectTable = ({ data, totalProject }) => {
       header: "Title",
       cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: (info) => info.getValue(),
-    }),
-    columnHelper.accessor("started_Date", {
-      header: "Date",
+    columnHelper.accessor("progress", {
+      header: "Progess Percent",
       cell: (info) => info.getValue(),
     }),
     columnHelper.display({
@@ -54,15 +45,15 @@ export const ProjectTable = ({ data, totalProject }) => {
         <div className="flex gap-x-2 items-center justify-start">
           <Button
             variant="outline"
-            className="bg-[var(--button-primary)] text-secondary hover:text-secondary"
+            className="bg-button-primary text-secondary hover:text-secondary hover:bg-button-primary"
             onClick={() => handleEditClick(row.original._id)}
           >
             Edit
           </Button>
           <DeleteModal
             className="bg-destructive text-secondary"
-            key="projects"
             id={row.original._id}
+            keys="skills"
           />
         </div>
       ),
@@ -87,10 +78,10 @@ export const ProjectTable = ({ data, totalProject }) => {
     <div className="p-4 w-full">
       <div className="grid grid-cols-[auto_auto] justify-between items-center mb-4">
         <h1 className="text-3xl my-4 font-bold text-[#815C00] flex items-center">
-          Projects
+          My Skills
         </h1>
         <span className="bg-[#FFF5D9] text-[#815C00] px-3 py-1 rounded-full text-sm">
-          {totalProject?.projectCount} Projects
+          {totalskill} Skills
         </span>
         <input
           type="text"
@@ -99,8 +90,7 @@ export const ProjectTable = ({ data, totalProject }) => {
           placeholder="Search..."
           className="mb-4 border-1 border-gray-200 rounded-md min-w-70 py-2 px-4"
         />
-        {/* Add button */}
-        <AddProjectModal />
+        <AddModal />
       </div>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-100">
@@ -112,12 +102,16 @@ export const ProjectTable = ({ data, totalProject }) => {
                   key={header.id}
                   onClick={header.column.getToggleSortingHandler()}
                 >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                  {header.column.getIsSorted() === "asc" ? " 🔼" : ""}
-                  {header.column.getIsSorted() === "desc" ? " 🔽" : ""}
+                  <div
+                    className={`flex py-1 items-center justify-center rounded-full w-full h-full`}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                    {header.column.getIsSorted() === "asc" ? " 🔼" : ""}
+                    {header.column.getIsSorted() === "desc" ? " 🔽" : ""}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -126,48 +120,24 @@ export const ProjectTable = ({ data, totalProject }) => {
         <tbody>
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => {
-                if (cell.column.id === "status") {
-                  const status = row.original.status;
-                  return (
-                    <td
-                      key={cell.id}
-                      className="whitespace-nowrap text-sm text-center h-full"
-                    >
-                      <div
-                        className={`flex py-1 items-center justify-center rounded-full w-full h-full ${
-                          colorMap[status] || "bg-background text-gray-500"
-                        }`}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </div>
-                    </td>
-                  );
-                } else {
-                  return (
-                    <td
-                      className={`px-6 py-4 whitespace-nowrap text-sm 
-                      text-gray-500"
-                    }`}
-                      key={cell.id}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  );
-                }
-              })}
+              {row.getVisibleCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  className="whitespace-nowrap text-sm text-center h-full"
+                >
+                  <div
+                    className={`flex py-1 items-center justify-center rounded-full w-full h-full`}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </div>
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
       {openUpdateModal && (
-        <UpdateProjectModal
+        <UpdateSkillModal
           id={selectedSkillId}
           open={openUpdateModal}
           onOpenChange={setOpenUpdateModal}

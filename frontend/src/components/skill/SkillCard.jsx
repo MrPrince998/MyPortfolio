@@ -12,6 +12,7 @@ const iconLibraries = {
 };
 const SkillCard = ({ icon, title, progress = 0 }) => {
   const IconComponent = iconLibraries[icon.library]?.[icon.name];
+
   // Arc configuration
   const radius = 28;
   const circumference = 2 * Math.PI * radius;
@@ -77,7 +78,7 @@ const SkillCard = ({ icon, title, progress = 0 }) => {
             group-hover:scale-110
           "
           >
-            {<IconComponent /> || "★"}
+            {IconComponent ? <IconComponent /> : "★"}
           </div>
         </div>
       </div>

@@ -67,14 +67,6 @@ const HomePage = () => {
     },
   ];
 
-  // const skillDetails = [
-  //   { icon: <FaFigma />, title: "Figma", progress: 100 },
-  //   { icon: <FaNodeJs />, title: "Node Js", progress: 20 },
-  //   { icon: <IoLogoJavascript />, title: "JavaScript", progress: 90 },
-  //   { icon: <FaReact />, title: "React Js", progress: 85 },
-  //   { icon: <DiIllustrator />, title: "Adobe Illustrator", progress: 100 },
-  // ];
-
   const { data: skillDetails } = useFetch({
     query: "/api/skills",
     key: ["skills"],

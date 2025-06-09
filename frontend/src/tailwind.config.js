@@ -5,6 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        button: 'var(--button-primary)',
         ...mauve,
         ...violet,
         ...red,

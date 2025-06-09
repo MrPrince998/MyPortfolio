@@ -16,12 +16,13 @@ const projectSchema = new mongoose.Schema({
   projectLink: {
     type: String,
   },
-  started_Date: {
+  startedDate: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   status: {
     type: String,
+    enum: ["pending", "active", "completed"],
     default: "pending",
   },
   isclientProject: {
