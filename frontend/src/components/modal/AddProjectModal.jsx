@@ -69,7 +69,10 @@ const AddProjectModal = () => {
     projectLink: Yup.string().url("Must be a valid URL").nullable(),
     status: Yup.string().required("Status is required"),
     isclientProject: Yup.boolean(),
-    techStack: Yup.string().required("Technologies used is required"),
+    techStack: Yup.array() // Changed to array
+      .of(Yup.string().trim().required("Technology cannot be empty"))
+      .min(1, "At least one technology is required")
+      .required("Technologies used is required"),
   });
 
   const handleAddProjects = (values, { resetForm }) => {
@@ -80,7 +83,21 @@ const AddProjectModal = () => {
     formData.append("status", values.status);
     formData.append("isclientProject", values.isclientProject.toString());
     formData.append("image", values.image);
-    formData.append("techStack", values.techStack);
+
+    // Handle techStack: convert comma-separated string to array if necessary
+    let techStackArray = values.techStack;
+    if (typeof values.techStack === "string") {
+      techStackArray = values.techStack
+        .split(",")
+        .map((tech) => tech.trim())
+        .filter(Boolean);
+    }
+    // Append each tech stack item individually if your backend expects it that way,
+    // or stringify the array if it expects a single stringified array.
+    // Assuming backend now expects an array of strings directly for FormData:
+    if (Array.isArray(techStackArray)) {
+      techStackArray.forEach((tech) => formData.append("techStack[]", tech));
+    }
 
     mutate(formData);
     resetForm();
@@ -106,7 +123,7 @@ const AddProjectModal = () => {
             projectLink: "",
             status: "pending",
             isclientProject: false,
-            techStack: "",
+            techStack: [], // Changed to empty array
           }}
           validationSchema={projectValidationSchema}
           onSubmit={handleAddProjects}
@@ -180,17 +197,30 @@ const AddProjectModal = () => {
                   <Input
                     id="techStack"
                     name="techStack"
-                    onChange={handleChange}
+                    // For Formik, the value should be a string for the input field
+                    onChange={(e) => {
+                      // Keep the input as a string, validation/submission will handle array
+                      handleChange(e);
+                    }}
                     onBlur={handleBlur}
-                    value={values.techStack}
-                    placeholder="React, Node.js, MongoDB"
+                    value={
+                      Array.isArray(values.techStack)
+                        ? values.techStack.join(", ")
+                        : values.techStack
+                    }
+                    placeholder="React, Node.js, MongoDB (comma-separated)"
                   />
                   {errors.techStack && touched.techStack && (
-                    <p className="text-red-500 text-sm">{errors.techStack}</p>
+                    <p className="text-red-500 text-sm">
+                      {/* Display error for array or string */}
+                      {typeof errors.techStack === "string"
+                        ? errors.techStack
+                        : errors.techStack?.join?.(", ") || "Invalid input"}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2 md:pt-6">
                   <Switch
                     id="isclientProject"
                     checked={values.isclientProject}

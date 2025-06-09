@@ -83,7 +83,10 @@ const UpdateProjectModal = ({ id, open, onOpenChange }) => {
     projectLink: Yup.string().url("Must be a valid URL").nullable(),
     status: Yup.string().required("Status is required"),
     isclientProject: Yup.boolean(),
-    techStack: Yup.string().required("Technologies used is required"),
+    techStack: Yup.array() // Changed to array
+      .of(Yup.string().trim().required("Technology cannot be empty"))
+      .min(1, "At least one technology is required")
+      .required("Technologies used is required"),
   });
 
   const handleUpdateProject = (values, { resetForm }) => {
@@ -96,7 +99,19 @@ const UpdateProjectModal = ({ id, open, onOpenChange }) => {
     if (values.image && typeof values.image !== "string") {
       formData.append("image", values.image);
     }
-    formData.append("techStack", values.techStack);
+
+    // Handle techStack: convert comma-separated string to array if necessary
+    let techStackArray = values.techStack;
+    if (typeof values.techStack === "string") {
+      techStackArray = values.techStack
+        .split(",")
+        .map((tech) => tech.trim())
+        .filter(Boolean);
+    }
+    // Append each tech stack item individually
+    if (Array.isArray(techStackArray)) {
+      techStackArray.forEach((tech) => formData.append("techStack[]", tech));
+    }
 
     mutate(formData);
   };
@@ -127,7 +142,10 @@ const UpdateProjectModal = ({ id, open, onOpenChange }) => {
             projectLink: projectData?.projectLink || "",
             status: projectData?.status || "pending",
             isclientProject: projectData?.isclientProject || false,
-            techStack: projectData?.techStack || "",
+            // Ensure techStack is initialized as an array, join if it's already an array from projectData
+            techStack: Array.isArray(projectData?.techStack)
+              ? projectData.techStack.join(", ")
+              : projectData?.techStack || "",
           }}
           validationSchema={projectValidationSchema}
           onSubmit={handleUpdateProject}
@@ -198,21 +216,29 @@ const UpdateProjectModal = ({ id, open, onOpenChange }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="techStack">Technologies *</Label>
+                  <Label htmlFor="techStack">
+                    Technologies * (comma-separated)
+                  </Label>
                   <Input
                     id="techStack"
                     name="techStack"
-                    onChange={handleChange}
+                    onChange={handleChange} // Formik handles the string input
                     onBlur={handleBlur}
-                    value={values.techStack}
+                    value={values.techStack} // Keep as string for input field
                     placeholder="React, Node.js, MongoDB"
                   />
                   {errors.techStack && touched.techStack && (
-                    <p className="text-red-500 text-sm">{errors.techStack}</p>
+                    <p className="text-red-500 text-sm">
+                      {typeof errors.techStack === "string"
+                        ? errors.techStack
+                        : errors.techStack?.join?.(", ") || "Invalid input"}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2 md:pt-6">
+                  {" "}
+                  {/* Adjusted padding for alignment */}
                   <Switch
                     id="isclientProject"
                     checked={values.isclientProject}
