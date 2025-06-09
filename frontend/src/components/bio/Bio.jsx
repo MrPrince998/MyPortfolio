@@ -4,7 +4,7 @@ import { useFetch } from "../../query/useFetch";
 const Bio = () => {
   const { data, isLoading } = useFetch({
     query: "/api/eph-get",
-    key: "bioData",
+    key: ["bioData"],
   });
   const bio = data?.[0];
 

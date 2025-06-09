@@ -6,8 +6,8 @@ import { RiArrowDropDownLine, RiWifiOffLine } from "react-icons/ri";
 const Projects = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const { data, isLoading, isError, error } = useFetch({
-    query: "/api/projects", 
-    key: "projects",
+    query: "/api/projects",
+    key: ["projects"],
   });
 
   // Skeleton Loading Component

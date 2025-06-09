@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useFetch } from "../../../query/useFetch";
 import { GoldParticleLoader } from "../../common/loadings/GoldParticleLoader";
@@ -8,34 +8,42 @@ import { Button } from "../../ui/Button";
 const SingleProject = () => {
   const { id } = useParams();
   const apiUrl = import.meta.env.VITE_API_URL;
-  const [techStackData, setTechStackData] = useState([]);
 
   const { data, isLoading, isError, error } = useFetch({
     query: `/api/projects/${id}`,
-    key: ["project", id],
+    key: ["projects", id],
   });
 
-  useEffect(() => {
-    let newTechStack = [];
-    if (data && data.techStack) {
-      if (typeof data.techStack === "string") {
-        newTechStack = data.techStack
-          .split(",")
-          .map((tech) => tech.trim())
-          .filter(Boolean);
-      } else if (Array.isArray(data.techStack)) {
-        newTechStack = data.techStack
-          .map((tech) => String(tech).trim())
-          .filter(Boolean);
-      }
+  const techStackData = useMemo(() => {
+    if (!data || !data.techStack) {
+      return [];
     }
-    setTechStackData(newTechStack);
+    if (typeof data.techStack === "string") {
+      return data.techStack
+        .split(",")
+        .map((tech) => tech.trim())
+        .filter(Boolean);
+    }
+    if (Array.isArray(data.techStack)) {
+      return data.techStack
+        .map((tech) => String(tech ?? "").trim())
+        .filter(Boolean);
+    }
+    return [];
   }, [data]);
 
   if (isLoading) return <GoldParticleLoader />;
   if (isError)
-    return <p>Error loading project: {error?.message || "Unknown error"}</p>;
-  if (!data) return <p>Project not found.</p>;
+    return (
+      <p className="text-red-500 text-center p-4">
+        Error loading project: {error?.message || "Unknown error"}
+      </p>
+    );
+  if (!data) return <p className="text-center p-4">Project not found.</p>;
+
+  const imageSrc = data.image
+    ? `${apiUrl}${data.image}`
+    : "";
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 relative">
@@ -48,7 +56,7 @@ const SingleProject = () => {
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <div className="rounded-lg overflow-hidden border border-gray-200 shadow-lg">
           <img
-            src={`${apiUrl}${data.image}`}
+            src={imageSrc}
             alt={data.title}
             className="w-full h-auto object-cover aspect-video"
             loading="lazy"
@@ -83,12 +91,12 @@ const SingleProject = () => {
       </div>
 
       {data.projectLink && (
-        <div className="mt-8">
+        <div className="mt-8 text-center md:text-left">
           <a href={data.projectLink} target="_blank" rel="noopener noreferrer">
             <Button
               variant="default"
               size="lg"
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               View Project / Source Code
             </Button>

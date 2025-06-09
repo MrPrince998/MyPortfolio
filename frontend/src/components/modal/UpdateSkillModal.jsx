@@ -23,7 +23,7 @@ const UpdateSkillModal = ({ id, open, onOpenChange }) => {
   const { mutate, isPending } = updateData();
   const { data: GetSingleSkill } = useFetch({
     query: `/api/skills/${id}`,
-    key: "skills"
+    key: ["skills"],
   });
 
   const skillValidationSchema = Yup.object().shape({

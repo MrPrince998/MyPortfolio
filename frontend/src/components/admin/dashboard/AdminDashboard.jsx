@@ -10,16 +10,16 @@ import { SkillTable } from "./SkillTable";
 const AdminDashboard = () => {
   const { data: totalProject } = useFetch({
     query: "/api/totalProjects",
-    key: ["totalProjects"], // Changed to array
+    key: ["totalProjects"], 
   });
   const { data: projects, isLoading } = useFetch({
     query: "/api/projects",
-    key: ["projects"], // Changed to array
+    key: ["projects"],
   });
 
   const { data: skillData } = useFetch({
     query: "/api/skills",
-    key: ["skills"], // Changed to array
+    key: ["skills"], 
   });
 
   // Statistics calculations

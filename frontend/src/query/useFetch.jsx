@@ -6,12 +6,12 @@ const url = import.meta.env.VITE_API_URL;
 
 export const useFetch = ({ query, key, enabled }) => {
   return useQuery({
-    queryKey: key, // Use key directly, assuming it can be an array
+    queryKey: key,
     queryFn: async () => {
       const res = await axios.get(`${url}${query}`);
       return res.data;
     },
-    enabled: enabled, // Pass the enabled option
+    enabled: enabled,
   });
 };
 
@@ -59,7 +59,8 @@ export const deleteData = () => {
           "Content-Type": "application/json",
         },
       });
-      queryClient.invalidateQueries(`${key}`);
+      // Ensure the key is an array for invalidateQueries
+      queryClient.invalidateQueries(Array.isArray(key) ? key : [key]);
       return response.data;
     },
   });
