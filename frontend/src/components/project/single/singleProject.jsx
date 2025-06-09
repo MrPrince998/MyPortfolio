@@ -15,22 +15,40 @@ const SingleProject = () => {
   });
 
   const techStackData = useMemo(() => {
-    if (!data || !data.techStack) {
-      return [];
-    }
+    if (!data || !data.techStack) return [];
+
     if (typeof data.techStack === "string") {
-      return data.techStack
-        .split(",")
-        .map((tech) => tech.trim())
-        .filter(Boolean);
+      try {
+        const parsed = JSON.parse(data.techStack);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((tech) => String(tech ?? "").trim())
+            .filter(Boolean);
+        } else {
+          // fallback if it's just a comma-separated string
+          return data.techStack
+            .split(",")
+            .map((tech) => tech.trim())
+            .filter(Boolean);
+        }
+      } catch {
+        // not JSON, fallback to comma-separated string
+        return data.techStack
+          .split(",")
+          .map((tech) => tech.trim())
+          .filter(Boolean);
+      }
     }
+
     if (Array.isArray(data.techStack)) {
       return data.techStack
         .map((tech) => String(tech ?? "").trim())
         .filter(Boolean);
     }
+
     return [];
   }, [data]);
+  
 
   if (isLoading) return <GoldParticleLoader />;
   if (isError)

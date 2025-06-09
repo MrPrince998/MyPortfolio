@@ -38,7 +38,7 @@ export const postProject = () => {
         onSuccess: () => {
           console.log("Mutation succeeded");
           resetForm();
-          queryClient.invalidateQueries("projects");
+          queryClient.invalidateQueries(["projects"]); // Changed to array
           setOpen(false);
         },
         onError: (error) => {
