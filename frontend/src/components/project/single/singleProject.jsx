@@ -16,14 +16,20 @@ const SingleProject = () => {
   });
 
   useEffect(() => {
-    if (data?.techStack) {
-      setTechStackData(
-        data.techStack
+    let newTechStack = [];
+    if (data && data.techStack) {
+      if (typeof data.techStack === "string") {
+        newTechStack = data.techStack
           .split(",")
           .map((tech) => tech.trim())
-          .filter((tech) => tech)
-      );
+          .filter(Boolean);
+      } else if (Array.isArray(data.techStack)) {
+        newTechStack = data.techStack
+          .map((tech) => String(tech).trim())
+          .filter(Boolean);
+      }
     }
+    setTechStackData(newTechStack);
   }, [data]);
 
   if (isLoading) return <GoldParticleLoader />;
