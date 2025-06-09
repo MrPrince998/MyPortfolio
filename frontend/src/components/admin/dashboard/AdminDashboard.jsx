@@ -10,16 +10,16 @@ import { SkillTable } from "./SkillTable";
 const AdminDashboard = () => {
   const { data: totalProject } = useFetch({
     query: "/api/totalProjects",
-    key: "totalProjects",
+    key: ["totalProjects"], // Changed to array
   });
   const { data: projects, isLoading } = useFetch({
     query: "/api/projects",
-    key: "projects",
+    key: ["projects"], // Changed to array
   });
 
   const { data: skillData } = useFetch({
     query: "/api/skills",
-    key: "skill",
+    key: ["skills"], // Changed to array
   });
 
   // Statistics calculations
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
           color="bg-primary"
         />
         <StatsCard
-          icon={<FolderIcon className="h-6 w-6 text-seconday" />}
+          icon={<FolderIcon className="h-6 w-6 text-secondary" />} // Changed typo: text-seconday to text-secondary
           title="Active Projects"
           value={stats?.activeProjects}
           color="bg-green-500"

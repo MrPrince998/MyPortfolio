@@ -1,2 +1,24 @@
+/* ...existing styles... */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure it takes at least the full viewport height */
+}
+
+.content-area {
+  flex-grow: 1; /* Allows this area to grow and take available space */
+  display: flex; /* To help center fallback content if needed */
+  flex-direction: column; /* Stack content vertically */
+}
+
+.suspense-fallback-container {
+  width: 100%;
+  flex-grow: 1; /* Make fallback take available space within content-area */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%; /* Ensure it tries to fill the content-area */
+}
 
 

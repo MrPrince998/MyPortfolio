@@ -4,13 +4,14 @@ import axios from "axios";
 
 const url = import.meta.env.VITE_API_URL;
 
-export const useFetch = ({ query, key }) => {
+export const useFetch = ({ query, key, enabled }) => {
   return useQuery({
-    queryKey: [key],
+    queryKey: key, // Use key directly, assuming it can be an array
     queryFn: async () => {
       const res = await axios.get(`${url}${query}`);
       return res.data;
     },
+    enabled: enabled, // Pass the enabled option
   });
 };
 
@@ -30,19 +31,24 @@ export const post = () => {
 };
 
 export const postProject = () => {
-  const mutate = useMutation(async ({ query, data }) => {
-    console.log(data);
-    // Use axios for FormData POST
-    console.log(`${url}${query}`);
-    const response = await axios.post(`${url}${query}`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Do NOT set Content-Type for FormData, let the browser set it
-      },
-    });
-    return response.data;
-  });
-  return mutate;
+  try {
+    mutate(
+      { query: "/api/projects", data: formData },
+      {
+        onSuccess: () => {
+          console.log("Mutation succeeded");
+          resetForm();
+          queryClient.invalidateQueries("projects");
+          setOpen(false);
+        },
+        onError: (error) => {
+          console.error("Mutation failed", error);
+        },
+      }
+    );
+  } catch (err) {
+    console.error("Caught error calling mutate:", err);
+  }
 };
 
 export const deleteData = () => {

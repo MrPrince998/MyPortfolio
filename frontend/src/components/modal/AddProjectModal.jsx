@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/Input";
 import { useState } from "react";
-import { postProject } from "@/query/useFetch";
 import {
   Select,
   SelectContent,
@@ -19,12 +18,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { queryClient } from "@/main";
-import { TextArea } from "@radix-ui/themes";
+import { X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
+const Status = [
+  { value: "pending", label: "Pending" },
+  { value: "active", label: "Active" },
+  { value: "completed", label: "Complete" },
+];
 
 const AddProjectModal = () => {
   const [open, setOpen] = useState(false);
-  const { mutate, isPending } = postProject();
+  const url = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("adminToken");
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (formData) => {
+      const response = await axios.post(`${url}/api/projects/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries("projects");
+      setOpen(false);
+    },
+    onError: (error) => {
+      console.error("Mutation failed:", error);
+    },
+  });
 
   const projectValidationSchema = Yup.object().shape({
     title: Yup.string()
@@ -33,80 +61,52 @@ const AddProjectModal = () => {
     description: Yup.string().required("Description is required"),
     image: Yup.mixed()
       .required("Image is required")
-      .test("fileType", "Unsupported File Format", (value) =>
+      .test("fileType", "Only images (JPEG, PNG, WEBP) are allowed", (value) =>
         value
           ? ["image/jpeg", "image/png", "image/webp"].includes(value.type)
           : false
       ),
-    projectLink: Yup.string(),
+    projectLink: Yup.string().url("Must be a valid URL").nullable(),
     status: Yup.string().required("Status is required"),
     isclientProject: Yup.boolean(),
+    techStack: Yup.string().required("Technologies used is required"),
   });
 
   const handleAddProjects = (values, { resetForm }) => {
-    console.log("Submitting form", values);
     const formData = new FormData();
-    const fields = [
-      { name: "title", value: values.title },
-      { name: "description", value: values.description },
-      { name: "projectLink", value: values.projectLink },
-      { name: "status", value: values.status },
-      {
-        name: "isclientProject",
-        value: values.isclientProject ? "true" : "false",
-      },
-      { name: "image", value: values.image },
-    ];
-    fields.forEach((field) => {
-      if (
-        field.value !== undefined &&
-        field.value !== null &&
-        field.value !== ""
-      ) {
-        formData.append(field.name, field.value);
-      }
-    });
-    // Debug: log all FormData entries
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ":", pair[1]);
-    }
-    console.log("Calling mutate");
-    mutate(
-      { query: "/api/projects", data: formData },
-      {
-        onSuccess: () => {
-          resetForm();
-          queryClient.invalidateQueries("projects");
-          setOpen(false);
-        },
-      }
-    );
-  };
+    formData.append("title", values.title);
+    formData.append("description", values.description);
+    formData.append("projectLink", values.projectLink || "");
+    formData.append("status", values.status);
+    formData.append("isclientProject", values.isclientProject.toString());
+    formData.append("image", values.image);
+    formData.append("techStack", values.techStack);
 
-  const Status = [
-    { value: "pending", label: "Pending" },
-    { value: "active", label: "Active" },
-    { value: "completed", label: "Complete" },
-  ];
+    mutate(formData);
+    resetForm();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add Projects</Button>
+        <Button variant="outline">Add Project</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[435px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Project</DialogTitle>{" "}
-          {/* Changed from "Add Skill" */}
+          <DialogTitle className="text-xl font-semibold">
+            Add New Project
+          </DialogTitle>
         </DialogHeader>
+
         <Formik
           initialValues={{
             title: "",
             description: "",
-            image: "",
+            image: null,
             projectLink: "",
             status: "pending",
             isclientProject: false,
+            techStack: "",
           }}
           validationSchema={projectValidationSchema}
           onSubmit={handleAddProjects}
@@ -118,128 +118,147 @@ const AddProjectModal = () => {
             handleChange,
             handleBlur,
             handleSubmit,
-            isSubmitting,
             setFieldValue,
             resetForm,
           }) => (
             <Form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title" className="mb-2 block">
-                  Title
-                </Label>
-                <Input
-                  type="text"
-                  name="title"
-                  id="title"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.title}
-                  placeholder="Enter title"
-                />
-                {errors.title && touched.title && (
-                  <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title *</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.title}
+                    placeholder="Project title"
+                  />
+                  {errors.title && touched.title && (
+                    <p className="text-red-500 text-sm">{errors.title}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select
+                    onValueChange={(value) => setFieldValue("status", value)}
+                    value={values.status}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Status.map((stat) => (
+                        <SelectItem key={stat.value} value={stat.value}>
+                          {stat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.status && touched.status && (
+                    <p className="text-red-500 text-sm">{errors.status}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="projectLink">Project Link</Label>
+                  <Input
+                    id="projectLink"
+                    name="projectLink"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.projectLink}
+                    placeholder="https://example.com"
+                  />
+                  {errors.projectLink && touched.projectLink && (
+                    <p className="text-red-500 text-sm">{errors.projectLink}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="techStack">Technologies *</Label>
+                  <Input
+                    id="techStack"
+                    name="techStack"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.techStack}
+                    placeholder="React, Node.js, MongoDB"
+                  />
+                  {errors.techStack && touched.techStack && (
+                    <p className="text-red-500 text-sm">{errors.techStack}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isclientProject"
+                    checked={values.isclientProject}
+                    onCheckedChange={(checked) =>
+                      setFieldValue("isclientProject", checked)
+                    }
+                  />
+                  <Label htmlFor="isclientProject">Client Project</Label>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="description" className="mb-2 block">
-                  Description
-                </Label>
-                <TextArea
-                  type="text"
-                  name="description"
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
                   id="description"
+                  name="description"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.description}
-                  className="rounded-md"
-                  placeholder="Enter project description"
+                  placeholder="Project description"
+                  rows={4}
                 />
                 {errors.description && touched.description && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.description}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.description}</p>
                 )}
               </div>
 
-              <div>
-                <Label htmlFor="projectLink" className="mb-2 block">
-                  Project Link
-                </Label>
-                <Input
-                  type="text"
-                  name="projectLink"
-                  id="projectLink"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.projectLink}
-                  placeholder="Enter your project link"
-                />
+              <div className="space-y-2">
+                <Label htmlFor="image">Project Image *</Label>
+                <div className="flex items-center gap-4">
+                  {/* Selected image preview */}
+                  {values.image && (
+                    <div className="relative group">
+                      <img
+                        src={URL.createObjectURL(values.image)}
+                        alt="Project preview"
+                        className="h-24 w-24 object-cover rounded-md border"
+                      />
+                      <button
+                        type="button"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                        onClick={() => setFieldValue("image", null)}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/jpeg, image/png, image/webp"
+                      onChange={(e) => {
+                        setFieldValue("image", e.target.files[0]);
+                      }}
+                      onBlur={handleBlur}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      JPEG, PNG, or WEBP. Max 5MB.
+                    </p>
+                    {errors.image && touched.image && (
+                      <p className="text-red-500 text-sm">{errors.image}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="status" className="mb-2 block">
-                  Select Status
-                </Label>
-                <Select
-                  onValueChange={(value) => setFieldValue("status", value)}
-                  value={values.status}
-                  onBlur={() => handleBlur("status")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Project Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Status.map((stat) => (
-                      <SelectItem key={stat.value} value={stat.value}>
-                        {stat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.status && touched.status && (
-                  <p className="text-red-500 text-sm mt-1">{errors.status}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="isclientProject" className="mb-2 block">
-                  Is Client Project
-                </Label>
-                <Select
-                  onValueChange={(value) =>
-                    setFieldValue("isclientProject", value === "true")
-                  }
-                  value={values.isclientProject ? "true" : "false"}
-                  onBlur={() => handleBlur("isclientProject")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select True or False" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">True</SelectItem>
-                    <SelectItem value="false">False</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="image" className="mb-2 block">
-                  Image
-                </Label>
-                <Input
-                  type="file"
-                  name="image"
-                  id="image"
-                  onChange={(e) => {
-                    // For file uploads, you might need to handle it differently
-                    setFieldValue("image", e.target.files[0]);
-                  }}
-                  onBlur={handleBlur}
-                />
-                {errors.image && touched.image && (
-                  <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-                )}
-              </div>
-              <div className="flex justify-end gap-4 pt-2">
+              <div className="flex justify-end gap-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -250,8 +269,11 @@ const AddProjectModal = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" >
-                  {isPending ? "Adding..." : "Add"}
+                <Button
+                  type="submit"
+                  disabled={isPending || Object.keys(errors).length > 0}
+                >
+                  {isPending ? "Adding..." : "Add Project"}
                 </Button>
               </div>
             </Form>

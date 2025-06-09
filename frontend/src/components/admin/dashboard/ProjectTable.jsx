@@ -14,12 +14,12 @@ import AddProjectModal from "@/components/modal/AddProjectModal";
 
 export const ProjectTable = ({ data, totalProject }) => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const [selectedSkillId, setSelectedSkillId] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
   const handleEditClick = (id) => {
-    setSelectedSkillId(id);
+    setSelectedProjectId(id);
     setOpenUpdateModal(true);
   };
 
@@ -43,9 +43,28 @@ export const ProjectTable = ({ data, totalProject }) => {
       header: "Status",
       cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor("started_Date", {
+    columnHelper.accessor("startedDate", {
       header: "Date",
-      cell: (info) => info.getValue(),
+      cell: (info) => {
+        const dateValue = info.getValue();
+        if (!dateValue) {
+          return "N/A"; 
+        }
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) {
+            return "Invalid Date";
+          }
+          return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        } catch (error) {
+          console.error("Error formatting date:", dateValue, error);
+          return "Invalid Date";
+        }
+      },
     }),
     columnHelper.display({
       id: "actions",
@@ -54,15 +73,15 @@ export const ProjectTable = ({ data, totalProject }) => {
         <div className="flex gap-x-2 items-center justify-start">
           <Button
             variant="outline"
-            className="bg-[var(--button-primary)] text-secondary hover:text-secondary"
+            className="bg-[var(--button-primary)] text-secondary hover:text-secondary hover:bg-[var(--button-primary)]/70 "
             onClick={() => handleEditClick(row.original._id)}
           >
             Edit
           </Button>
           <DeleteModal
-            className="bg-destructive text-secondary"
-            key="projects"
+            className="bg-destructive text-secondary hover:bg-destructive/70"
             id={row.original._id}
+            keys="projects"
           />
         </div>
       ),
@@ -168,7 +187,7 @@ export const ProjectTable = ({ data, totalProject }) => {
       </table>
       {openUpdateModal && (
         <UpdateProjectModal
-          id={selectedSkillId}
+          id={selectedProjectId}
           open={openUpdateModal}
           onOpenChange={setOpenUpdateModal}
         />

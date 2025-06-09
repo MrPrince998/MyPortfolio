@@ -45,13 +45,13 @@ export const SkillTable = ({ data, totalskill }) => {
         <div className="flex gap-x-2 items-center justify-start">
           <Button
             variant="outline"
-            className="bg-button-primary text-secondary hover:text-secondary hover:bg-button-primary"
+            className="bg-[var(--button-primary)] text-secondary hover:text-secondary hover:bg-[var(--button-primary)]/70 "
             onClick={() => handleEditClick(row.original._id)}
           >
             Edit
           </Button>
           <DeleteModal
-            className="bg-destructive text-secondary"
+            className="bg-destructive text-secondary hover:bg-destructive/70"
             id={row.original._id}
             keys="skills"
           />

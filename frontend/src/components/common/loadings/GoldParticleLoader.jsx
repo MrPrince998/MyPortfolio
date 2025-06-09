@@ -11,7 +11,7 @@ export const GoldParticleLoader = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#FFF5D9]">
+    <div className="w-full flex flex-col items-center justify-center min-h-screen bg-[#FFF5D9]">
       <div className="relative w-20 h-20 mb-4">
         {/* Animated gold particles */}
         {[...Array(5)].map((_, i) => (
